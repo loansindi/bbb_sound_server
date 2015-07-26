@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"code.google.com/p/portaudio-go/portaudio"
 	"encoding/binary"
-	"fmt"
 	"io"
+	"io/ioutil"
 	"log"
 	"mime/multipart"
 	"net/http"
@@ -17,7 +17,8 @@ func main() {
 	http.HandleFunc("/play/", func(w http.ResponseWriter, req *http.Request) {
 		if req.Method == "POST" {
 			log.Println("Recieved post request.")
-			playASound(req.FormFile("soundFile"))
+			soundFile, _, _ := req.FormFile("soundFile")
+			playASound(soundFile)
 			//TODO(cagocs): play a sound
 
 		} else {
@@ -26,6 +27,8 @@ func main() {
 			//TODO(cagocs): maybe return 200 with the name of the sound playing?
 		}
 	})
+
+	http.ListenAndServe(":3030", nil)
 
 }
 
@@ -36,8 +39,13 @@ func playASound(file multipart.File) {
 			panic(err)
 		}
 	}
+
+	soundFile, _ := ioutil.TempFile("", "sound_")
+	buffer, _ := ioutil.ReadAll(file)
+	ioutil.WriteFile(soundFile.Name(), buffer, os.ModeTemporary)
+
 	framePerBuffer := 2048
-	ff := newFfmpeg(file)
+	ff := newFfmpeg(soundFile.Name())
 	defer ff.Close()
 	stream, err := portaudio.OpenDefaultStream(0, 2, 44100, framePerBuffer, ff)
 	chk(err)
