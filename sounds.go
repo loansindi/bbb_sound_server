@@ -12,8 +12,21 @@ import (
 func main() {
 	http.HandleFunc("/play/", func(w http.ResponseWriter, req *http.Request) {
 		if req.Method == "POST" {
-			log.Println("Recieved post request.")
-			soundFile, _, _ := req.FormFile("soundFile")
+			log.Printf("Recieved %s request.", req.Method)
+
+			if req.ContentLength > 10485760 {
+				w.WriteHeader(http.StatusBadRequest)
+				w.Write([]byte("File size capped at 10mb"))
+				return
+			}
+
+			soundFile, _, err := req.FormFile("soundFile")
+			if err != nil {
+				log.Printf("Error getting soundFile from Form. \n %s", err.Error())
+				w.WriteHeader(http.StatusServiceUnavailable)
+				return
+			}
+			w.Write([]byte("Success!  http://localhost:3030/config.html"))
 			playASound(soundFile)
 
 		} else {
@@ -22,6 +35,9 @@ func main() {
 			//TODO(cagocs): maybe return 200 with the name of the sound playing?
 		}
 	})
+
+	controlfs := http.FileServer(http.Dir("control"))
+	http.Handle("/", controlfs)
 
 	http.ListenAndServe(":3030", nil)
 
