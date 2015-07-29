@@ -6,7 +6,7 @@ A Golang-based REST server. Starts on port 3030. Serves up a little form where y
 
 `/play/` accepts `POST` requests with content-type `multipart/form-data`. Must have a form field `soundFile`, which is the audio file to be played. Audio file must be <10 MB. 
 
-Can only handle one audio file at a time, right now. Probably for the best.
+Multiple audio files stack up one on top of the other.
 
 
 ## Requirements
