@@ -12,7 +12,6 @@ import (
 func main() {
 	http.HandleFunc("/play/", func(w http.ResponseWriter, req *http.Request) {
 		if req.Method == "POST" {
-			log.Printf("Recieved %s request.", req.Method)
 
 			if req.ContentLength > 10485760 {
 				w.WriteHeader(http.StatusBadRequest)
@@ -20,14 +19,15 @@ func main() {
 				return
 			}
 
-			soundFile, _, err := req.FormFile("soundFile")
+			soundFile, headers, err := req.FormFile("soundFile")
 			if err != nil {
 				log.Printf("Error getting soundFile from Form. \n %s", err.Error())
 				w.WriteHeader(http.StatusServiceUnavailable)
 				return
 			}
-			w.Write([]byte("Success!  http://localhost:3030/config.html"))
-			playASound(soundFile)
+			log.Printf("Recieved %s", headers.Filename)
+			w.Write([]byte("All done!"))
+			go playASound(soundFile)
 
 		} else {
 			w.WriteHeader(http.StatusMethodNotAllowed)
