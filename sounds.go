@@ -59,7 +59,7 @@ func playASound(file multipart.File) {
 		log.Printf("Error writing file to disk")
 	}
 
-	cmd := exec.Command("mplayer", soundFile.Name())
+	cmd := exec.Command("mpv", soundFile.Name())
 
 	err3 := cmd.Run()
 	if err3 != nil {
